@@ -1,5 +1,6 @@
 import json
 import os.path
+import datetime
 
 if not os.path.exists('data.json'):
     open('data.json','w')
@@ -14,20 +15,21 @@ class io():
             json.dump(self.issues, f)
 
     def show_all(self, order=True, status=None):
-        print "ID\tPriority\tStatus\tDescription"
+        print "ID\tPriority\tStatus\tDescription\t Last Modified"
         keys = sorted(self.issues.keys(), reverse=order)
         if status != None:
             keys = [key for key in keys if self.issues[key]['status'] == status]
         for key in keys:
-            print key,'\t', self.issues[key]['priority'],'\t\t', self.issues[key]['status'],'\t',self.issues[key]['description']
+            print key,'\t', self.issues[key]['priority'],'\t\t', self.issues[key]['status'],'\t ',self.issues[key]['description'],'\t',self.issues[key]['last_modified']
 
     def new(self, priority, description):
         self.current_key += 1
-        self.issues[str(self.current_key)] = {'priority':priority, 'description':description,'status':'open'}
+        self.issues[str(self.current_key)] = {'priority':priority, 'description':description,'status':'open', 'last_modified':datetime.datetime.now().strftime('%a %m/%d/%y %I:%M%p')}
         self.write()
 
     def close(self, issue_id):
         self.issues[issue_id]['status'] = 'closed'
+        self.issues[issue_id]['last_modified'] = datetime.datetime.now().strftime('%a %m/%d/%y %I:%M%p')
         self.write()
 
     def edit(self,issue_id, priority = "", description = ""):
@@ -35,10 +37,12 @@ class io():
         editted['priority'] = priority if priority != "" else editted['priority']
         editted['description'] = description if description != "" else editted['description']
         self.issues[issue_id] = editted
+        self.issues[issue_id]['last_modified'] = datetime.datetime.now().strftime('%a %m/%d/%y %I:%M%p')
         self.write()
 
     def append(self,issue_id,description=""):
         self.issues[issue_id]['description'] += description
+        self.issues[issue_id]['last_modified'] = datetime.datetime.now().strftime('%a %m/%d/%y %I:%M%p')
         self.write() 
 
     def __init__(self):
